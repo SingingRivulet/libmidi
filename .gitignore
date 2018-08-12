@@ -1,3 +1,9 @@
+/midi-dump
+/midi-relative-dump
+
+*.mid
+*.txt
+
 # Prerequisites
 *.d
 
