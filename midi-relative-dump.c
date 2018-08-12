@@ -6,15 +6,23 @@
 #include <fcntl.h>
 
 #include "midi-relative.h"
+
+int lastchannel=-1;
+
 static void usage(const char *prog)
 {
-  printf("usage: %s <file.midi>\n", prog);
+  printf("usage: %s <file.midi> <out>\n", prog);
 }
 static void dump_midi(int note , int channel , void * arg)
 {
-  printf("channel:%d\trelative:%d\n",channel,note);
+  FILE * o=(FILE*)arg;
+  if(channel!=lastchannel){
+    lastchannel=channel;
+    fprintf(o,"\nchannel:%d\n",channel);
+  }
+  fprintf(o,"%d ",note);
 }
-static int parse_file(const char *path)
+static int parse_file(const char *path,const char *out)
 {
   struct stat st;
 
@@ -28,6 +36,11 @@ static int parse_file(const char *path)
     printf("open(%s): %m\n", path);
     return 1;
   }
+  
+  FILE * o=NULL;
+  o=fopen(out,"w");
+  if(o==NULL)
+    return 1;
 
   void *mem = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
   if (mem == MAP_FAILED) {
@@ -41,19 +54,20 @@ static int parse_file(const char *path)
   parser.size  = st.st_size;
   parser.in    = mem;
 
-  midi_relative_parse(&parser,dump_midi,NULL);
+  midi_relative_parse(&parser,dump_midi,o);
 
   munmap(mem, st.st_size);
   close(fd);
+  fclose(o);
   return 0;
 }
 
 int main(int argc, char **argv)
 {
-  if (argc != 2) {
+  if (argc != 3) {
     usage(argv[0]);
     return 1;
   }
 
-  return parse_file(argv[1]);
+  return parse_file(argv[1],argv[2]);
 }
