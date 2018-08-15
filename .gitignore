@@ -1,5 +1,6 @@
 /midi-dump
 /midi-relative-dump
+/midi-index
 
 *.mid
 *.txt
