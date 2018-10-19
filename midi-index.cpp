@@ -86,8 +86,8 @@ class channelParser:public mainMelody{
 };
 int main(int argc, char** argv){
     if(argc!=3)
-        return 0;
+        return 1;
     channelParser P;
     P.start(argv[1],argv[2]);
-    return 1;
+    return 0;
 }
